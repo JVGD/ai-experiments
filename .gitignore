@@ -1,3 +1,4 @@
 *.png
 *.jpg
 images/*
+.ipynb_checkpoints/*
