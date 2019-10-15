@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import keras.backend as K
+from tqdm import tqdm
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.layers import Input, Dense
@@ -49,6 +50,26 @@ target = K.variable(target)
 # Training
 train_fn([sample])
 
+for idx in tqdm(range(len(samples))):
+    sample = samples[idx]
+    target = targets[idx]
+
+    # Adding batch dim since batch=1
+    sample = np.expand_dims(sample, axis=0)
+
+    # To tensors
+    sample = K.constant(sample)
+    target = K.constant(target)
+
+    # Training
+    target_pred = train_fn([sample])
+    target_pred = target_pred[0]
+
+    # Loss
+    loss = loss_fn(target, target_pred)
+    print(K.eval(loss))
+
+
 # Or
 # model.train_fn = K.function(
 #     inputs=[x], 
@@ -56,4 +77,4 @@ train_fn([sample])
 #     updates=updates_op)
 
 
-embed()
+# embed()
