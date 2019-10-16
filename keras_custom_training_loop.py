@@ -11,7 +11,6 @@ from IPython import embed
 np.random.seed(0)
 tf.set_random_seed(0)
 
-
 # Sum 2 numbers from 0 to 10 dataset
 samples = np.random.randint(0, 9, size=(100,2))
 targets = np.sum(samples, axis=-1)
@@ -24,24 +23,30 @@ x = Input(shape=[features])
 y = Dense(units=1)(x)
 model = Model(x, y)
 
-# Compiling
-optimizer = Adam(lr=1e-4)
-
 # Loss
 def loss_fn(y_true, y_pred):
     loss_value = K.sum(K.pow((y_true - y_pred), 2))
     return loss_value
 
+# Compiling
+optimizer = Adam(lr=1e-4)
+
+# Graph creation
 # Creatin training graphs
-y_true = Input(shape=[20])
+y_true = Input(shape=[0])
 y_pred = model(x)
-loss = loss_fn(y_pred, y_pred)
+loss = K.sum(K.pow((y_true - y_pred), 2))
 updates_op = optimizer.get_updates(params=model.trainable_weights, loss=loss)
 
-train_fn = K.function(
-    inputs=[x], 
-    outputs=[y_pred], 
+train = K.function(
+    inputs=[x, y_true], 
+    outputs=[loss], 
     updates=updates_op)
+
+test = K.function(
+    inputs=[x, y_true], 
+    outputs=[loss])
+
 
 # Training Loop
 i = 0
@@ -50,8 +55,11 @@ target = targets[i]
 sample = K.variable(sample)
 target = K.variable(target)
 
+embed()
+
+
 # Training
-train_fn([sample])
+# train([sample])
 
 # Training loop
 epochs = 100
@@ -70,31 +78,27 @@ for epoch in range(epochs):
         target = K.constant(target)
 
         # Training
-        target_pred = train_fn([sample])
-        target_pred = target_pred[0]
+        loss_value = train([sample, target])
 
-        # Loss
-        loss = loss_fn(target, target_pred)
-        loss_numpy = K.eval(loss)
-        pbar.set_description('Loss %.2f' % loss_numpy)
+        pbar.set_description('Loss %s' % loss_value[0])
         # print(K.eval(loss))
 
-    # Testing
-    samples_test = np.random.randint(0, 9, size=(3,2))
-    for sample in samples_test:
-        # Adding batch dim since batch=1
-        sample = np.expand_dims(sample, axis=0)
+    # # Testing
+    # samples_test = np.random.randint(0, 9, size=(3,2))
+    # for sample in samples_test:
+    #     # Adding batch dim since batch=1
+    #     sample = np.expand_dims(sample, axis=0)
 
-        # To tensors
-        sample = K.constant(sample)
+    #     # To tensors
+    #     sample = K.constant(sample)
 
-        # Prediction
-        target_pred = model(sample)
+    #     # Prediction
+    #     target_pred = model(sample)
 
-        # To numpy
-        sample = K.eval(sample)
-        target_pred = K.eval(target_pred)
-        print("Test: sample: %s Pred: %s" % (sample, target_pred))
+    #     # To numpy
+    #     sample = K.eval(sample)
+    #     target_pred = K.eval(target_pred)
+    #     print("Test: sample: %s Pred: %s" % (sample, target_pred))
 
 
 
