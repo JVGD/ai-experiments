@@ -8,17 +8,20 @@ from keras.layers import Input, Dense
 from IPython import embed
 
 # Setting seeds
-np.random.seed(1)
-tf.set_random_seed(1)
+np.random.seed(0)
+tf.set_random_seed(0)
 
 
-# Random dataset
-samples = np.random.random((100,20))
-targets = np.random.random((100,1))
+# Sum 2 numbers from 0 to 10 dataset
+samples = np.random.randint(0, 9, size=(100,2))
+targets = np.sum(samples, axis=-1)
+
+# Features
+features = samples.shape[1]
 
 # Model
-x = Input(shape=[20])
-y = Dense(units=1, activation='sigmoid')(x)
+x = Input(shape=[features])
+y = Dense(units=1)(x)
 model = Model(x, y)
 
 # Compiling
@@ -50,24 +53,50 @@ target = K.variable(target)
 # Training
 train_fn([sample])
 
-for idx in tqdm(range(len(samples))):
-    sample = samples[idx]
-    target = targets[idx]
+# Training loop
+epochs = 100
 
-    # Adding batch dim since batch=1
-    sample = np.expand_dims(sample, axis=0)
+for epoch in range(epochs):
+    pbar = tqdm(range(len(samples)))
+    for idx in pbar:
+        sample = samples[idx]
+        target = targets[idx]
 
-    # To tensors
-    sample = K.constant(sample)
-    target = K.constant(target)
+        # Adding batch dim since batch=1
+        sample = np.expand_dims(sample, axis=0)
 
-    # Training
-    target_pred = train_fn([sample])
-    target_pred = target_pred[0]
+        # To tensors
+        sample = K.constant(sample)
+        target = K.constant(target)
 
-    # Loss
-    loss = loss_fn(target, target_pred)
-    print(K.eval(loss))
+        # Training
+        target_pred = train_fn([sample])
+        target_pred = target_pred[0]
+
+        # Loss
+        loss = loss_fn(target, target_pred)
+        loss_numpy = K.eval(loss)
+        pbar.set_description('Loss %.2f' % loss_numpy)
+        # print(K.eval(loss))
+
+    # Testing
+    samples_test = np.random.randint(0, 9, size=(3,2))
+    for sample in samples_test:
+        # Adding batch dim since batch=1
+        sample = np.expand_dims(sample, axis=0)
+
+        # To tensors
+        sample = K.constant(sample)
+
+        # Prediction
+        target_pred = model(sample)
+
+        # To numpy
+        sample = K.eval(sample)
+        target_pred = K.eval(target_pred)
+        print("Test: sample: %s Pred: %s" % (sample, target_pred))
+
+
 
 
 # Or
