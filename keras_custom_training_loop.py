@@ -15,6 +15,11 @@ tf.set_random_seed(0)
 samples = np.random.randint(0, 9, size=(100,2))
 targets = np.sum(samples, axis=-1)
 
+# Samples for testing
+samples_test = np.random.randint(0, 9, size=(10,2))
+targets_test = np.sum(samples_test, axis=-1)
+
+
 # Features
 features = samples.shape[1]
 
@@ -47,67 +52,58 @@ test = K.function(
     inputs=[x, y_true], 
     outputs=[loss])
 
-
-# Training Loop
-i = 0
-sample = np.expand_dims(samples[i], axis=0)
-target = targets[i]
-sample = K.variable(sample)
-target = K.variable(target)
-
-embed()
-
-
-# Training
-# train([sample])
+# embed()
 
 # Training loop
 epochs = 100
 
 for epoch in range(epochs):
+    print('Epoch %s:' % epoch)
     pbar = tqdm(range(len(samples)))
+    losses_train = []
     for idx in pbar:
         sample = samples[idx]
         target = targets[idx]
 
         # Adding batch dim since batch=1
         sample = np.expand_dims(sample, axis=0)
+        target = np.expand_dims(target, axis=0)
 
         # To tensors
         sample = K.constant(sample)
         target = K.constant(target)
 
-        # Training
-        loss_value = train([sample, target])
+        # Evaluation of train graph
+        loss_train = train([sample, target])
+        
+        # Compute loss mean
+        losses_train.append(loss_train[0])
+        loss_train_mean = np.mean(losses_train)
+        
+        # Update progress bar
+        pbar.set_description('Train Loss %s' % loss_train_mean)
 
-        pbar.set_description('Loss %s' % loss_value[0])
-        # print(K.eval(loss))
+    # Testing
+    losses_test = []
+    for idx in range(len(samples_test)):
+        sample_test = samples_test[idx]
+        target_test = targets_test[idx]
 
-    # # Testing
-    # samples_test = np.random.randint(0, 9, size=(3,2))
-    # for sample in samples_test:
-    #     # Adding batch dim since batch=1
-    #     sample = np.expand_dims(sample, axis=0)
+        # Adding batch dim since batch=1
+        sample_test = np.expand_dims(sample_test, axis=0)
+        target_test = np.expand_dims(target_test, axis=0)
 
-    #     # To tensors
-    #     sample = K.constant(sample)
-
-    #     # Prediction
-    #     target_pred = model(sample)
-
-    #     # To numpy
-    #     sample = K.eval(sample)
-    #     target_pred = K.eval(target_pred)
-    #     print("Test: sample: %s Pred: %s" % (sample, target_pred))
-
-
-
-
-# Or
-# model.train_fn = K.function(
-#     inputs=[x], 
-#     outputs=[y_pred], 
-#     updates=updates_op)
-
-
-# embed()
+        # To tensors
+        sample_test = K.constant(sample_test)
+        target_test = K.constant(target_test)
+        
+        # Evaluation test graph
+        loss_test = test([sample_test, target_test])
+        # print("Test Loss: %s" % loss_test[0])
+        # print("Test: sample: %s Pred: %s" % (K.eval(sample_test), K.eval(target_test)))
+        
+        # Compute test loss mean
+        losses_test.append(loss_test[0])
+    
+    loss_test_mean = np.mean(losses_test)
+    print('Test Loss: %s' % loss_test_mean)
