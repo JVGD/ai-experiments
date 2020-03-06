@@ -18,16 +18,18 @@ from tensorflow_core.python.keras.optimizers import Adam
         Custom callbacks implementation
         Custom metrics implementation
         No tensorboar / or linking manually
-        Speed: 53s per epoch
+        Speed: 18s per epoch
 """
 
 # Sanity check
 if tf.__version__ != '2.1.0':
     raise ValueError('You need TensorFlow 2.1.0 to run this')
 
+
 @tf.function
 def loss_compute(y_true, y_pred):
     return tf.square(tf.pow(y_true, 2) - tf.pow(y_pred, 2))
+
 
 @tf.function
 def forward_pass(model, sample, target):
@@ -40,6 +42,7 @@ def forward_pass(model, sample, target):
     gradients = tape.gradient(loss, model.trainable_weights)
 
     return loss, gradients
+
 
 @tf.function
 def backward_pass(model, gradients, optimizer):
