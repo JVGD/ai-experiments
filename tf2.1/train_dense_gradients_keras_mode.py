@@ -5,6 +5,7 @@ from tensorflow.keras.layers import Input, Dense, Flatten, Conv2D
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import Adam
 
+
 """Training with Gradient Tape
 
     Pros:
@@ -19,14 +20,13 @@ from tensorflow.keras.optimizers import Adam
 """
 
 
-
 # Sanity check
 if tf.__version__ != '2.1.0':
     raise ValueError('You need TensorFlow 2.1.0 to run this')
 
 
 def loss(y_true, y_pred):
-    return tf.square(tf.pow(y_true, 2) - tf.pow(y_pred, 2))
+    return tf.square(y_true - y_pred)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,20 @@ from torch.nn import Module, Linear
 from torch.nn.functional import relu
 from tqdm import tqdm
 
+"""Summary of Pytorch training
+
+    Pros:
+        very explicit
+        speed 6s / epoch
+        debuggeable
+
+    Cons:
+        new framework to learn
+        more code for same work
+
+"""
+
+
 # Sanity check
 if torch.__version__ != '1.4.0':
     raise ValueError('This must be run with pytorch 1.4.0')

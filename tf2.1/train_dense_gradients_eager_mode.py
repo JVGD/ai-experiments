@@ -6,6 +6,7 @@ from tensorflow_core.python.keras.layers import Input, Dense, Flatten, Conv2D
 from tensorflow_core.python.keras import Model
 from tensorflow_core.python.keras.optimizers import Adam
 
+
 """Training with Gradient Tape
 
     Pros:
@@ -18,8 +19,9 @@ from tensorflow_core.python.keras.optimizers import Adam
         Custom callbacks implementation
         Custom metrics implementation
         No tensorboar / or linking manually
-        Speed: 53s per epoch
+        Speed: 47s per epoch
 """
+
 
 # Sanity check
 if tf.__version__ != '2.1.0':
@@ -27,7 +29,7 @@ if tf.__version__ != '2.1.0':
 
 
 def loss_compute(y_true, y_pred):
-    return tf.square(tf.pow(y_true, 2) - tf.pow(y_pred, 2))
+    return tf.square(y_true - y_pred)
 
 
 def train():
@@ -81,7 +83,8 @@ def train():
 
             # Tracking progress
             loss_metric(loss)
-            pbar.set_description('Training Loss: %s' % loss_metric.result())
+            pbar.set_description('Training Loss: %.3f' % 
+                                 loss_metric.result().numpy())
 
         # At the end of the epoch test the model
         test_targets_pred = model(test_samples)
